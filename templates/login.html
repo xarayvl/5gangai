@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="{{ current_language }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ t('sign_in_title') }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Newsreader:ital,wght@0,500;1,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- Ambient animated background -->
+  <div class="aurora" aria-hidden="true">
+    <span class="blob blob-a"></span>
+    <span class="blob blob-b"></span>
+    <span class="blob blob-c"></span>
+  </div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-mark"></div>
+      <h1>{{ t('app_name') }}</h1>
+      <p class="subtitle" id="subtitle">{{ t('welcome_back') }}</p>
+
+      <div class="auth-error" id="error-box" style="display:none;"></div>
+
+      <form id="auth-form">
+        <div class="field">
+          <label for="username" id="username-label">{{ t('username') }}</label>
+          <input type="text" id="username" autocomplete="username" value="{{ remembered or '' }}" />
+        </div>
+        <div class="field">
+          <label for="password" id="password-label">{{ t('password') }}</label>
+          <input type="password" id="password" autocomplete="current-password" />
+        </div>
+
+        <div class="checkbox-row" id="remember-row">
+          <input type="checkbox" id="remember" {% if remembered %}checked{% endif %} />
+          <label for="remember">{{ t('remember_me') }}</label>
+        </div>
+
+        <button type="submit" class="btn-primary" id="submit-btn">{{ t('log_in') }}</button>
+      </form>
+
+      <div class="auth-switch">
+        <span id="switch-text">{{ t('no_account_prompt') }}</span>
+        <a id="switch-link">{{ t('register_action') }}</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.CURRENT_LANGUAGE = "{{ current_language }}";
+    window.I18N = {{ i18n_json | safe }};
+
+    const form = document.getElementById('auth-form');
+    const errorBox = document.getElementById('error-box');
+    const submitBtn = document.getElementById('submit-btn');
+    const subtitle = document.getElementById('subtitle');
+    const usernameLabel = document.getElementById('username-label');
+    const passwordLabel = document.getElementById('password-label');
+    const switchText = document.getElementById('switch-text');
+    const switchLink = document.getElementById('switch-link');
+    const rememberRow = document.getElementById('remember-row');
+
+    const I18N = window.I18N || {};
+    function tr(key) { return I18N[key] || key; }
+
+    let mode = 'login'; // or 'register'
+
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.style.display = 'block';
+    }
+
+    function clearError() {
+      errorBox.style.display = 'none';
+    }
+
+    switchLink.addEventListener('click', () => {
+      clearError();
+      if (mode === 'login') {
+        mode = 'register';
+        subtitle.textContent = tr('create_account_subtitle');
+        usernameLabel.textContent = tr('choose_username');
+        passwordLabel.textContent = tr('choose_password');
+        submitBtn.textContent = tr('create_account');
+        switchText.textContent = tr('have_account_prompt');
+        switchLink.textContent = tr('login_action');
+        rememberRow.style.display = 'none';
+      } else {
+        mode = 'login';
+        subtitle.textContent = tr('welcome_back');
+        usernameLabel.textContent = tr('username');
+        passwordLabel.textContent = tr('password');
+        submitBtn.textContent = tr('log_in');
+        switchText.textContent = tr('no_account_prompt');
+        switchLink.textContent = tr('register_action');
+        rememberRow.style.display = 'flex';
+      }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearError();
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const remember = document.getElementById('remember').checked;
+
+      if (!username || !password) {
+        showError(tr('enter_both'));
+        return;
+      }
+
+      const endpoint = mode === 'login' ? '/api/login' : '/api/register';
+      const body = mode === 'login'
+        ? { username, password, remember }
+        : { username, password };
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+
+        if (!res.ok || !data.ok) {
+          showError(data.error || tr('something_went_wrong'));
+          return;
+        }
+
+        if (mode === 'login') {
+          window.location.href = '/chat';
+        } else {
+          mode = 'login';
+          subtitle.textContent = tr('account_created_subtitle');
+          usernameLabel.textContent = tr('username');
+          passwordLabel.textContent = tr('password');
+          submitBtn.textContent = tr('log_in');
+          switchText.textContent = tr('no_account_prompt');
+          switchLink.textContent = tr('register_action');
+          rememberRow.style.display = 'flex';
+          document.getElementById('password').value = '';
+        }
+      } catch (err) {
+        showError(tr('cannot_reach_server'));
+      }
+    });
+  </script>
+</body>
+</html>

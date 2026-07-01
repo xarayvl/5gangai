@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+jinja2
+openai
+python-multipart
+upstash-redis

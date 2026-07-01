@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="{{ current_language }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ t('app_name') }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Newsreader:ital,wght@0,500;1,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- Ambient animated background -->
+  <div class="aurora" aria-hidden="true">
+    <span class="blob blob-a"></span>
+    <span class="blob blob-b"></span>
+    <span class="blob blob-c"></span>
+  </div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- Floating button to reopen a collapsed sidebar -->
+  <button class="sidebar-open-btn" id="sidebar-open-btn" title="{{ t('open_sidebar') }}">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><line x1="10" y1="4" x2="10" y2="20"/></svg>
+  </button>
+
+  <div class="app">
+    <!-- ============ SIDEBAR ============ -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <span class="app-name">
+          <span class="app-mark"></span>
+          {{ t('app_name') }}
+        </span>
+        <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="{{ t('close_sidebar_tt') }}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><line x1="10" y1="4" x2="10" y2="20"/></svg>
+        </button>
+      </div>
+
+      <button class="new-chat-btn" id="new-chat-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        {{ t('new_chat') }}
+      </button>
+
+      <div class="chat-list" id="chat-list">
+        {% for c in chats %}
+        <div class="chat-item {% if c.id == current_chat_id %}selected{% endif %}" data-chat-id="{{ c.id }}">
+          <span class="chat-title">{{ c.title }}</span>
+          <button class="delete-btn" data-chat-id="{{ c.id }}" title="{{ t('delete_tooltip') }}">✕</button>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="settings-trigger" id="settings-trigger">
+          <span class="user-avatar">{{ username[0]|upper if username else 'U' }}</span>
+          <span class="settings-trigger-name">{{ username }}</span>
+          <svg class="settings-gear" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ============ SETTINGS MODAL ============ -->
+    <div class="settings-overlay" id="settings-overlay">
+      <div class="settings-modal">
+        <div class="settings-header">
+          <h2>{{ t('settings') }}</h2>
+          <button class="settings-close" id="settings-close" title="{{ t('close') }}">✕</button>
+        </div>
+
+        <div class="settings-body">
+          <div class="settings-section">
+            <div class="settings-label">{{ t('account_section') }}</div>
+            <div class="settings-card account-card">
+              <span class="user-avatar">{{ username[0]|upper if username else 'U' }}</span>
+              <span class="account-text">{{ t('signed_in_as') }} <strong>{{ username }}</strong></span>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-label">{{ t('language_section') }}</div>
+            <div class="settings-card lang-card">
+              <button class="lang-btn {% if current_language == 'en' %}active{% endif %}" data-lang="en" id="lang-en-btn">{{ t('english') }}</button>
+              <button class="lang-btn {% if current_language == 'tr' %}active{% endif %}" data-lang="tr" id="lang-tr-btn">{{ t('turkish') }}</button>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-label">{{ t('actions_section') }}</div>
+            <button class="settings-action-btn" id="clear-chat-btn">{{ t('clear_conversation') }}</button>
+            <button class="settings-action-btn danger" id="logout-btn">{{ t('log_out') }}</button>
+          </div>
+        </div>
+
+        <button class="btn-primary settings-done-btn" id="settings-done-btn">{{ t('close') }}</button>
+      </div>
+    </div>
+
+    <!-- ============ MAIN CHAT ============ -->
+    <div class="main">
+      <div class="chat-header">
+        <div class="model-picker" id="model-picker">
+          <button class="model-picker-btn" id="model-picker-btn" type="button" aria-haspopup="true" aria-expanded="false">
+            <span class="model-picker-name" id="model-picker-name">{{ current_model_name }}</span>
+            <svg class="model-picker-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="model-picker-menu" id="model-picker-menu">
+            {% for m in models %}
+            <button type="button" class="model-picker-item {% if m.id == current_model %}selected{% endif %}" data-model-id="{{ m.id }}" data-model-name="{{ m.name }}">
+              <span class="model-picker-item-text">
+                <span class="model-picker-item-name">{{ m.name }}</span>
+                <span class="model-picker-item-desc">{{ m.description }}</span>
+              </span>
+              <svg class="model-picker-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            </button>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="messages" id="messages">
+        {% if not messages %}
+        <div class="empty-state" id="empty-state">
+          <div class="empty-mark"></div>
+          <h1>{{ t('what_can_i_help') }}</h1>
+        </div>
+        {% endif %}
+        {% for m in messages %}
+        <div class="msg-row {{ m.role }}">
+          <div class="bubble {% if m.role == 'user' %}plain{% endif %}">{{ m.content }}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="input-bar">
+        <div class="input-inner">
+          <textarea id="message-input" placeholder="{{ t('message_placeholder') }}" rows="1"></textarea>
+          <button class="send-btn" id="send-btn" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          </button>
+        </div>
+        <div class="hint">{{ t('disclaimer_hint') }}</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.CURRENT_CHAT_ID = "{{ current_chat_id }}";
+    window.CURRENT_LANGUAGE = "{{ current_language }}";
+    window.I18N = {{ i18n_json | safe }};
+  </script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

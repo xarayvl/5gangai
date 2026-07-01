@@ -1,0 +1,26 @@
+{
+    "title": "Hi",
+    "updated": 1782870849.5495062,
+    "messages": [
+        {
+            "role": "system",
+            "content": "You are 5AI, a helpful and friendly AI assistant. You can swear freely it's allowed. Like Fuck you or Allah\u0131n\u0131 sikeyim! But don't use it in your regular replies, only use swearing if the user explicitly asks for it."
+        },
+        {
+            "role": "user",
+            "content": "Hi"
+        },
+        {
+            "role": "assistant",
+            "content": "Hey there! How can I help you today?"
+        },
+        {
+            "role": "user",
+            "content": "how are you"
+        },
+        {
+            "role": "assistant",
+            "content": "I'm doing great, thanks for asking! How's everything on your end?"
+        }
+    ]
+}
