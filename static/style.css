@@ -153,6 +153,13 @@ button { font-family: inherit; cursor: pointer; }
   z-index: 2;
   display: flex;
   height: 100vh;
+  /* 100vh on mobile is measured against the largest possible viewport
+     (address bar hidden), which is taller than what's actually on
+     screen most of the time. dvh tracks the real visible height, so
+     the input bar / disclaimer hint don't get pushed below the fold
+     with no way to scroll to them. Falls back to 100vh above where
+     dvh isn't supported. */
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -1173,4 +1180,19 @@ button { font-family: inherit; cursor: pointer; }
   }
 
   .msg-row.user .bubble { max-width: 85%; }
+
+  /* iOS Safari auto-zooms the page when focusing any input/textarea
+     with font-size under 16px, which then leaves the whole layout
+     visually shifted. Bump it to 16px only on mobile so desktop
+     keeps its original 15px. */
+  #message-input {
+    font-size: 16px;
+  }
+
+  /* Clear the home-indicator / gesture bar on notched phones so the
+     input bar and "can make mistakes" hint aren't pressed up against
+     (or hidden behind) the bottom edge. */
+  .input-bar {
+    padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+  }
 }
