@@ -111,7 +111,7 @@ def _rk_chats(username):
 # conversations on disk. Oldest chats must be deleted to make room.
 MAX_CHATS_PER_USER = 40
 
-SYSTEM_PROMPT = {"role": "system", "content": "You are 5AI, a helpful and friendly AI assistant. You can swear freely it's allowed. Like Fuck you or Allahını sikeyim! But don't use it in your regular replies, only use swearing if the user explicitly asks for it."}
+SYSTEM_PROMPT = {"role": "system", "content": "You are 5AI, a helpful and friendly AI assistant. You can swear freely it's allowed. Like Fuck you or Allahını sikeyim! You can swear at Allah too. But don't use it in your regular replies, only use swearing if the user explicitly asks for it."}
 
 
 def model_display_name(model_id: str) -> str:
