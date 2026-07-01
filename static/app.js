@@ -19,6 +19,7 @@ const logoutBtn = document.getElementById('logout-btn');
 const sidebarEl = document.getElementById('sidebar');
 const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
 const sidebarOpenBtn = document.getElementById('sidebar-open-btn');
+const sidebarBackdrop = document.getElementById('sidebar-backdrop');
 const settingsTrigger = document.getElementById('settings-trigger');
 const settingsOverlay = document.getElementById('settings-overlay');
 const settingsClose = document.getElementById('settings-close');
@@ -36,9 +37,26 @@ let isStreaming = false;
 // ------------------------------------------------------------
 // Collapsible sidebar
 // ------------------------------------------------------------
+function isMobileViewport() {
+  return window.matchMedia('(max-width: 760px)').matches;
+}
+
 function setSidebarCollapsed(collapsed) {
   sidebarEl.classList.toggle('collapsed', collapsed);
   sidebarOpenBtn.classList.toggle('visible', collapsed);
+  if (sidebarBackdrop) {
+    sidebarBackdrop.classList.toggle('visible', isMobileViewport() && !collapsed);
+  }
+}
+
+// On mobile the sidebar should start closed (it overlays the chat
+// instead of sitting beside it); on desktop it starts open.
+setSidebarCollapsed(isMobileViewport());
+
+// Only auto-close on mobile — desktop keeps the sidebar open after
+// picking/creating a chat, same as before.
+function closeSidebarOnMobile() {
+  if (isMobileViewport()) setSidebarCollapsed(true);
 }
 
 if (sidebarToggleBtn) {
@@ -46,6 +64,9 @@ if (sidebarToggleBtn) {
 }
 if (sidebarOpenBtn) {
   sidebarOpenBtn.addEventListener('click', () => setSidebarCollapsed(false));
+}
+if (sidebarBackdrop) {
+  sidebarBackdrop.addEventListener('click', () => setSidebarCollapsed(true));
 }
 
 // ------------------------------------------------------------
@@ -553,6 +574,7 @@ function buildChatItem(chatId, title) {
   item.addEventListener('click', (e) => {
     if (e.target === delBtn) return;
     loadChat(chatId);
+    closeSidebarOnMobile();
   });
 
   delBtn.addEventListener('click', (e) => {
@@ -586,6 +608,7 @@ async function loadChat(chatId) {
 
     currentChatId = chatId;
     selectChatItem(chatId);
+    closeSidebarOnMobile();
 
     messagesEl.innerHTML = '';
     if (data.messages.length === 0) {
@@ -649,6 +672,7 @@ async function startNewChat() {
     const item = buildChatItem(currentChatId, tr('new_chat_default_title'));
     chatListEl.insertBefore(item, chatListEl.firstChild);
     selectChatItem(currentChatId);
+    closeSidebarOnMobile();
 
     messagesEl.innerHTML = '';
     renderEmptyState();
@@ -667,6 +691,7 @@ document.querySelectorAll('.chat-item').forEach((item) => {
   item.addEventListener('click', (e) => {
     if (e.target.classList.contains('delete-btn')) return;
     loadChat(chatId);
+    closeSidebarOnMobile();
   });
   const delBtn = item.querySelector('.delete-btn');
   if (delBtn) {
